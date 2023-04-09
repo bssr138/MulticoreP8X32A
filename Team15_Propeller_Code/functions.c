@@ -18,7 +18,7 @@
 //=============================================================================================
 // OPERATING VARIABLES
 //=============================================================================================
-#define MOTOR_KP 8.0
+#define MOTOR_KP 10.0
 static volatile int currentIntersection = 0;
 static volatile int numOfObjs = 0;
 static volatile int intLCD = 0;
@@ -28,6 +28,7 @@ static volatile int IntNumOfWidgetLocationInLaneA = 0;
 static volatile int IntNumOfMachineLocationInLaneB = 0;
 static volatile int distLCD = 0;
 static volatile int distance = 0;
+static volatile int skipFlag = 0;
 
 
 /*
@@ -202,8 +203,14 @@ void lineFollow(float Kp, int objectInFront ){
       //print("rightSen = %0.1f\n", rightSen);
       
       
-      //Updating Motor Power
-      stndMtrPwr = 10.0;
+      //Updating Motor Power to lower speed in lanes A and B
+      if (((currentIntersection <= 15)&&(currentIntersection>10)) || ((currentIntersection > 5) && (currentIntersection < 10)) || (skipFlag == 1)){
+        stndMtrPwr = 6.0;
+      }
+      else{
+        stndMtrPwr = 20.0;
+      }
+
       drive(stndMtrPwr+Kp*PosError,stndMtrPwr-Kp*PosError);
 
       
@@ -444,7 +451,7 @@ int getDistLCD(){
 //=============================================================================================
 void getToStart(){
   
-  lineFollow(MOTOR_KP,0);//located in functions.c
+  lineFollow(MOTOR_KP,1);//located in functions.c
   //!
   // //i0
   // drive(20,20);
@@ -494,13 +501,15 @@ int driveToi5(){
 //=============================================================================================
 void skipOneIntersection(){
   turnLeft();
-  lineFollow(MOTOR_KP,0);
+  lineFollow(MOTOR_KP,1);
   BotForward();
   turnRight();
-  lineFollow(MOTOR_KP,0);
+  skipFlag = 1;
+  lineFollow(MOTOR_KP,1);
+  skipFlag = 0;
   BotForward();
   turnRight();
-  lineFollow(MOTOR_KP,0);
+  lineFollow(MOTOR_KP, 1);
   BotForward();
   turnLeft();
 }
@@ -512,7 +521,7 @@ void skipOneIntersection(){
 //=============================================================================================
 void goToA5(){
   turnRight();
-  lineFollow(MOTOR_KP,0);
+  lineFollow(MOTOR_KP,1);
   BotForward();
   turnRight();
   currentIntersection = currentIntersection +1; // 6 --> A5
